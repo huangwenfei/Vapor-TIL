@@ -1,13 +1,10 @@
-//import FluentSQLite
-//import FluentMySQL
+
 import FluentPostgreSQL
 import Vapor
 
 /// Called before your application initializes.
 public func configure(_ config: inout Config, _ env: inout Environment, _ services: inout Services) throws {
     /// Register providers first
-//    try services.register(FluentSQLiteProvider())
-//    try services.register(FluentMySQLProvider())
     try services.register(FluentPostgreSQLProvider())
 
     /// Register routes to the router
@@ -21,38 +18,29 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
     middlewares.use(ErrorMiddleware.self) // Catches errors and converts to HTTP response
     services.register(middlewares)
 
-    /// Register the configured SQLite database to the database config.
+    // 1
     var databases = DatabasesConfig()
-    
-    // Configure a SQLite database
-//    let sqlite = try SQLiteDatabase(storage: .memory)
-    
-    /// Register the configured SQLite database to the database config.
-    
-//    databases.add(database: sqlite, as: .sqlite)
-    
-//    let databaseConfig = MySQLDatabaseConfig(
-//        hostname: "localhost",
-//        username: "vapor",
-//        password: "password",
-//        database: "vapor")
-//    let database = MySQLDatabase(config: databaseConfig)
-//    databases.add(database: database, as: .mysql)
-    
+    // 2
+    /// "??" is meaning: https://stackoverflow.com/questions/47362914/what-is-the-meaning-of-in-swift
+    let hostname = Environment.get("DATABASE_HOSTNAME") ?? "localhost"
+    let username = Environment.get("DATABASE_USER") ?? "vapor"
+    let databaseName = Environment.get("DATABASE_DB") ?? "vapor"
+    let password = Environment.get("DATABASE_PASSWORD") ?? "password"
+    // 3
     let databaseConfig = PostgreSQLDatabaseConfig(
-        hostname: "localhost",
-        username: "vapor",
-        database: "vapor",
-        password: "password")
+        hostname: hostname,
+        username: username,
+        database: databaseName,
+        password: password)
+    // 4
     let database = PostgreSQLDatabase(config: databaseConfig)
+    // 5
     databases.add(database: database, as: .psql)
-
+    // 6
     services.register(databases)
 
     /// Configure migrations
     var migrations = MigrationConfig()
-//    migrations.add(model: Acronym.self, database: .sqlite)
-//    migrations.add(model: Acronym.self, database: .mysql)
     migrations.add(model: Acronym.self, database: .psql)
     services.register(migrations)
 
